@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "seed": "node src/seeders/seed.js"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +22,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^7.5.0",
     "helmet": "^8.2.0",
     "joi": "^18.2.3",
     "jsonwebtoken": "^9.0.3",
