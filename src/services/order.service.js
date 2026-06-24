@@ -10,7 +10,7 @@ const { logAction } = require('./auditLog.service');
 const { notifyOrderCreated, notifyAdminNewOrder, notifyOrderStatusChanged } = require('./notification.service');
 
 const VALID_TRANSITIONS = {
-  placed: ['confirmed', 'cancelled'],
+  pending: ['confirmed', 'cancelled'],
   confirmed: ['preparing', 'cancelled'],
   preparing: ['out_for_delivery'],
   out_for_delivery: ['delivered'],
@@ -105,8 +105,8 @@ async function createOrder(userId, { addressId, couponCode, paymentMethod, notes
     coupon: couponId || undefined,
     paymentMethod,
     paymentStatus: paymentMethod === 'cod' ? 'pending' : 'pending',
-    orderStatus: 'placed',
-    statusHistory: buildStatusHistory('placed'),
+    orderStatus: 'pending',
+    statusHistory: buildStatusHistory('pending'),
     notes,
   });
 
@@ -137,7 +137,7 @@ async function createOrder(userId, { addressId, couponCode, paymentMethod, notes
       notifyAdminNewOrder(populated);
 
       const io = getIO();
-      io?.emit('new_order', { orderId: order._id, order: populated });
+      io?.to('admins').emit('new_order', { orderId: order._id, order: populated });
 
       return { order: populated, clientSecret: paymob.clientSecret, checkoutUrl: paymob.checkoutUrl };
     } catch (err) {
@@ -157,7 +157,7 @@ async function createOrder(userId, { addressId, couponCode, paymentMethod, notes
   notifyAdminNewOrder(populated);
 
   const io = getIO();
-  io?.emit('new_order', { orderId: order._id, order: populated });
+  io?.to('admins').emit('new_order', { orderId: order._id, order: populated });
 
   return { order: populated };
 }
@@ -287,10 +287,20 @@ async function cancelOrder(orderId, userId) {
     orderId: order._id,
     orderStatus: 'cancelled',
   });
+  io?.to('admins').emit('order_cancelled', {
+    orderId: order._id,
+    orderStatus: 'cancelled',
+  });
 
   return order.populate('items.product', 'name price image');
 }
 
+async function getOrderTracking(orderId, userId) {
+  const order = await Order.findOne({ _id: orderId, user: userId }).select('orderStatus statusHistory');
+  if (!order) throw new ApiError(404, 'Order not found');
+  return { status: order.orderStatus, timeline: order.statusHistory };
+}
+
 module.exports = {
-  createOrder, getOrder, getMyOrders, getAllOrders, updateOrderStatus, cancelOrder,
+  createOrder, getOrder, getMyOrders, getAllOrders, updateOrderStatus, cancelOrder, getOrderTracking,
 };

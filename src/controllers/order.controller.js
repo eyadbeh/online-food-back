@@ -32,4 +32,9 @@ const cancelOrder = catchAsync(async (req, res) => {
   sendSuccess(res, { order }, 'Order cancelled');
 });
 
-module.exports = { createOrder, getOrder, getMyOrders, getAllOrders, updateOrderStatus, cancelOrder };
+const getTracking = catchAsync(async (req, res) => {
+  const tracking = await orderService.getOrderTracking(req.params.orderId, req.user._id);
+  sendSuccess(res, { tracking });
+});
+
+module.exports = { createOrder, getOrder, getMyOrders, getAllOrders, updateOrderStatus, cancelOrder, getTracking };

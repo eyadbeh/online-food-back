@@ -26,8 +26,8 @@ const orderSchema = new mongoose.Schema(
     paymentKey: { type: String },
     orderStatus: {
       type: String,
-      enum: ['placed', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'],
-      default: 'placed',
+      enum: ['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'],
+      default: 'pending',
     },
     statusHistory: [statusHistorySchema],
     notes: { type: String, trim: true },

@@ -3,8 +3,8 @@ const catchAsync = require('../utils/catchAsync');
 const { sendSuccess } = require('../utils/apiResponse');
 
 const register = catchAsync(async (req, res) => {
-  const { user, accessToken, refreshToken } = await authService.register(req.body);
-  sendSuccess(res, { user, accessToken, refreshToken }, 'Registration successful', 201);
+  const { user } = await authService.register(req.body);
+  sendSuccess(res, { userId: user.id || user._id }, 'Account created successfully. Please verify your email.', 201);
 });
 
 const login = catchAsync(async (req, res) => {
@@ -48,6 +48,16 @@ const updateRole = catchAsync(async (req, res) => {
   sendSuccess(res, { user }, 'User role updated');
 });
 
+const toggleStatus = catchAsync(async (req, res) => {
+  const user = await authService.toggleUserStatus(req.params.userId, req.user._id);
+  sendSuccess(res, { user }, 'User status toggled');
+});
+
+const getUsers = catchAsync(async (req, res) => {
+  const result = await authService.listUsers(req.query);
+  sendSuccess(res, result, 'Users fetched');
+});
+
 const googleLogin = catchAsync(async (req, res) => {
   const { idToken } = req.body;
   const result = await authService.googleLogin(idToken);
@@ -60,4 +70,9 @@ const githubLogin = catchAsync(async (req, res) => {
   sendSuccess(res, result, 'GitHub login successful');
 });
 
-module.exports = { register, login, refreshTokens, logout, verifyEmail, forgotPassword, resetPassword, getMe, updateRole, googleLogin, githubLogin };
+const resendVerification = catchAsync(async (req, res) => {
+  await authService.resendVerification(req.body.email);
+  sendSuccess(res, null, 'If that email exists, a verification link has been sent');
+});
+
+module.exports = { register, login, refreshTokens, logout, verifyEmail, forgotPassword, resetPassword, getMe, updateRole, toggleStatus, getUsers, googleLogin, githubLogin, resendVerification };

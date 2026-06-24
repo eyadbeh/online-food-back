@@ -29,7 +29,7 @@ const cancel = {
 
 const list = {
   query: joi.object().keys({
-    orderStatus: joi.string().valid('placed', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'),
+    orderStatus: joi.string().valid('pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'),
     paymentStatus: joi.string().valid('pending', 'paid', 'failed'),
     startDate: joi.date(),
     endDate: joi.date(),
@@ -38,4 +38,8 @@ const list = {
   }),
 };
 
-module.exports = { createOrder, getById, updateStatus, cancel, list };
+const getTracking = {
+  params: joi.object().keys({ orderId: objectId.required() }),
+};
+
+module.exports = { createOrder, getById, updateStatus, cancel, list, getTracking };

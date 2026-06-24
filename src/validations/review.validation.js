@@ -34,4 +34,14 @@ const list = {
   }),
 };
 
-module.exports = { create, update, getById, remove, list };
+const listByProduct = {
+  params: joi.object().keys({ productId: objectId.required() }),
+  query: joi.object().keys({
+    page: joi.number().integer().min(1).default(1),
+    limit: joi.number().integer().min(1).max(100).default(20),
+    sortBy: joi.string().valid('createdAt', 'rating').default('createdAt'),
+    sortOrder: joi.string().valid('asc', 'desc').default('desc'),
+  }),
+};
+
+module.exports = { create, update, getById, remove, list, listByProduct };

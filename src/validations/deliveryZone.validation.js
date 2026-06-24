@@ -43,4 +43,8 @@ const list = {
   }),
 };
 
-module.exports = { create, update, getById, remove, list };
+const setDefault = {
+  params: joi.object().keys({ zoneId: objectId.required() }),
+};
+
+module.exports = { create, update, getById, remove, list, setDefault };

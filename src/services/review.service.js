@@ -69,4 +69,17 @@ async function updateProductRating(productId) {
   }
 }
 
-module.exports = { create, list, getById, update, remove };
+async function listByProduct(productId, { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' }) {
+  const skip = (page - 1) * limit;
+  const sort = sortOrder === 'asc' ? 1 : -1;
+  const sortObj = sortBy === 'rating' ? { rating: sort } : { createdAt: sort };
+
+  const [reviews, total] = await Promise.all([
+    Review.find({ product: productId }).populate('user', 'firstName avatar').sort(sortObj).skip(skip).limit(limit),
+    Review.countDocuments({ product: productId }),
+  ]);
+
+  return { reviews, total, page, limit };
+}
+
+module.exports = { create, list, getById, update, remove, listByProduct };

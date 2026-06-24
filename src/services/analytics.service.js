@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const Category = require('../models/Category');
 
 async function getTotalOrders() {
   return Order.countDocuments();
@@ -92,6 +93,96 @@ async function getSummary() {
   return { totalOrders, totalRevenue, productsCount, usersCount };
 }
 
+async function getCategoryCount() {
+  return Category.countDocuments();
+}
+
+async function getOrdersByStatus(status) {
+  return Order.countDocuments({ orderStatus: status });
+}
+
+async function getStats() {
+  const [totalUsers, totalOrders, totalProducts, totalCategories, totalRevenue, pendingOrders, confirmedOrders, deliveredOrders, cancelledOrders] = await Promise.all([
+    getUsersCount(),
+    getTotalOrders(),
+    getProductsCount(),
+    getCategoryCount(),
+    getTotalRevenue(),
+    getOrdersByStatus('pending'),
+    getOrdersByStatus('confirmed'),
+    getOrdersByStatus('delivered'),
+    getOrdersByStatus('cancelled'),
+  ]);
+
+  return {
+    totalUsers, totalOrders, totalProducts, totalCategories, totalRevenue,
+    pendingOrders, confirmedOrders, deliveredOrders, cancelledOrders,
+  };
+}
+
+async function getRevenueByPeriod(period = 'daily') {
+  let format;
+  switch (period) {
+    case 'weekly': format = '%Y-W%V'; break;
+    case 'monthly': format = '%Y-%m'; break;
+    case 'yearly': format = '%Y'; break;
+    default: format = '%Y-%m-%d';
+  }
+
+  return Order.aggregate([
+    { $match: { paymentStatus: 'paid' } },
+    {
+      $group: {
+        _id: { $dateToString: { format, date: '$createdAt' } },
+        revenue: { $sum: '$totalAmount' },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+}
+
+async function getOrdersAnalytics() {
+  const statuses = ['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'];
+  const counts = await Promise.all(statuses.map(getOrdersByStatus));
+  return statuses.reduce((acc, s, i) => { acc[s] = counts[i]; return acc; }, {});
+}
+
+async function getTopCustomers(limit = 10) {
+  return Order.aggregate([
+    { $match: { paymentStatus: 'paid' } },
+    {
+      $group: {
+        _id: '$user',
+        totalSpent: { $sum: '$totalAmount' },
+        orderCount: { $sum: 1 },
+      },
+    },
+    { $sort: { totalSpent: -1 } },
+    { $limit: limit },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    { $unwind: '$user' },
+    {
+      $project: {
+        _id: 1,
+        totalSpent: 1,
+        orderCount: 1,
+        firstName: '$user.firstName',
+        lastName: '$user.lastName',
+        email: '$user.email',
+        avatar: '$user.avatar',
+      },
+    },
+  ]);
+}
+
 module.exports = {
   getSummary,
   getTotalOrders,
@@ -100,4 +191,8 @@ module.exports = {
   getUsersCount,
   getRevenuePerDay,
   getTopSellingProducts,
+  getStats,
+  getRevenueByPeriod,
+  getOrdersAnalytics,
+  getTopCustomers,
 };

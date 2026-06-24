@@ -67,4 +67,8 @@ const list = {
   }),
 };
 
-module.exports = { create, update, getById, remove, list };
+const toggleFeatured = {
+  params: joi.object().keys({ productId: objectId.required() }),
+};
+
+module.exports = { create, update, getById, remove, list, toggleFeatured };

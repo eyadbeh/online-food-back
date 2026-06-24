@@ -33,6 +33,8 @@ const paymobCallback = catchAsync(async (req, res) => {
 
   const success = obj.success === true || obj.success === 'true';
 
+  const io = getIO();
+
   if (success) {
     order.paymentStatus = 'paid';
     await order.save();
@@ -47,15 +49,21 @@ const paymobCallback = catchAsync(async (req, res) => {
       rawResponse: obj,
     });
 
-    const io = getIO();
     io?.to(`user:${order.user}`).emit('order_status_updated', {
       orderId: order._id,
       orderStatus: order.orderStatus,
       paymentStatus: 'paid',
     });
+    io?.to(`user:${order.user}`).emit('payment_completed', {
+      orderId: order._id,
+    });
   } else {
     order.paymentStatus = 'failed';
     await order.save();
+
+    io?.to(`user:${order.user}`).emit('payment_failed', {
+      orderId: order._id,
+    });
 
     await logPayment({
       order: order._id,

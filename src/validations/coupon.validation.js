@@ -46,4 +46,10 @@ const list = {
   }),
 };
 
-module.exports = { create, update, getById, remove, list };
+const validate = {
+  body: joi.object().keys({
+    couponCode: joi.string().required().trim().uppercase(),
+  }),
+};
+
+module.exports = { create, update, getById, remove, list, validate };

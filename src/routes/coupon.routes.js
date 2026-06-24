@@ -7,6 +7,8 @@ const { authenticate, authorize } = require('../middlewares/auth');
 const { ROLES, AUDIT_ACTIONS } = require('../constants');
 const { audit } = require('../middlewares/audit');
 
+router.post('/validate', validate(couponValidation.validate), couponController.validate);
+
 router.use(authenticate, authorize(ROLES.ADMIN));
 
 router.get('/', validate(couponValidation.list), couponController.list);

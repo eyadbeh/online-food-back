@@ -143,6 +143,41 @@ async function resetPassword(token, newPassword) {
   await user.save();
 }
 
+async function toggleUserStatus(userId, adminId) {
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, 'User not found');
+  user.active = !user.active;
+  await user.save();
+  await logAction({
+    user: adminId,
+    action: user.active ? 'USER_ACTIVATED' : 'USER_DEACTIVATED',
+    entityType: 'User',
+    entityId: user._id,
+    metadata: { active: user.active },
+  });
+  return user;
+}
+
+async function listUsers({ page = 1, limit = 10, search, role, active }) {
+  const query = {};
+  if (search) {
+    query.$or = [
+      { firstName: { $regex: search, $options: 'i' } },
+      { lastName: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
+    ];
+  }
+  if (role) query.role = role;
+  if (active !== undefined) query.active = active;
+
+  const skip = (page - 1) * limit;
+  const [users, total] = await Promise.all([
+    User.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).select('-password -refreshToken -emailVerificationToken -emailVerificationExpires -resetPasswordToken -resetPasswordExpires'),
+    User.countDocuments(query),
+  ]);
+  return { users, total, page, limit };
+}
+
 async function getMe(userId) {
   const user = await User.findById(userId);
   if (!user) throw new ApiError(404, 'User not found');
@@ -269,6 +304,20 @@ async function githubLogin(code) {
   };
 }
 
+async function resendVerification(email) {
+  const user = await User.findOne({ email });
+  if (!user) return;
+
+  if (user.emailVerified) throw new ApiError(400, 'Email is already verified');
+
+  const emailToken = generateEmailVerificationToken();
+  user.emailVerificationToken = emailToken;
+  user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
+  await user.save();
+
+  sendVerificationEmail(email, emailToken).catch((err) => console.error('Failed to send verification email:', err));
+}
+
 module.exports = {
   register,
   login,
@@ -281,4 +330,7 @@ module.exports = {
   resetPassword,
   getMe,
   updateUserRole,
+  listUsers,
+  toggleUserStatus,
+  resendVerification,
 };

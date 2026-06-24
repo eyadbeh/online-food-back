@@ -3,7 +3,10 @@ const { objectId } = require('./custom.validation');
 
 const addProduct = {
   params: joi.object().keys({
-    productId: objectId.required(),
+    productId: objectId,
+  }),
+  body: joi.object().keys({
+    productId: objectId,
   }),
 };
 

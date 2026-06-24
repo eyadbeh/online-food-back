@@ -27,4 +27,9 @@ const remove = catchAsync(async (req, res) => {
   sendSuccess(res, null, 'Coupon deleted');
 });
 
-module.exports = { list, getById, create, update, remove };
+const validate = catchAsync(async (req, res) => {
+  const coupon = await couponService.validateCoupon(req.body.couponCode);
+  sendSuccess(res, { coupon });
+});
+
+module.exports = { list, getById, create, update, remove, validate };

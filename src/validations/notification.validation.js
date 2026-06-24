@@ -3,7 +3,7 @@ const { objectId } = require('./custom.validation');
 
 const list = {
   query: joi.object().keys({
-    read: joi.boolean(),
+    isRead: joi.boolean(),
     page: joi.number().integer().min(1).default(1),
     limit: joi.number().integer().min(1).max(100).default(20),
   }),

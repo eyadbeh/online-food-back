@@ -12,10 +12,10 @@ async function createNotification(userId, { title, message, type }) {
 }
 
 async function getNotifications(userId, query) {
-  const { read, page = 1, limit = 20 } = query;
+  const { isRead, page = 1, limit = 20 } = query;
   const filter = { user: userId };
 
-  if (read !== undefined) filter.read = read;
+  if (isRead !== undefined) filter.isRead = isRead;
 
   const skip = (page - 1) * limit;
   const [notifications, total] = await Promise.all([
@@ -27,14 +27,14 @@ async function getNotifications(userId, query) {
 }
 
 async function getUnreadCount(userId) {
-  const count = await Notification.countDocuments({ user: userId, read: false });
+  const count = await Notification.countDocuments({ user: userId, isRead: false });
   return count;
 }
 
 async function markAsRead(notificationId, userId) {
   const notification = await Notification.findOneAndUpdate(
     { _id: notificationId, user: userId },
-    { read: true },
+    { isRead: true },
     { returnDocument: 'after' }
   );
   if (!notification) throw new ApiError(404, 'Notification not found');
@@ -42,7 +42,7 @@ async function markAsRead(notificationId, userId) {
 }
 
 async function markAllAsRead(userId) {
-  await Notification.updateMany({ user: userId, read: false }, { read: true });
+  await Notification.updateMany({ user: userId, isRead: false }, { isRead: true });
 }
 
 async function removeNotification(notificationId, userId) {

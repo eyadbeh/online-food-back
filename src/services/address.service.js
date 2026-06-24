@@ -27,4 +27,11 @@ async function remove(id, userId) {
   return address;
 }
 
-module.exports = { create, getAll, getById, update, remove };
+async function setDefaultAddress(userId, addressId) {
+  await Address.updateMany({ user: userId, isDefault: true }, { isDefault: false });
+  const address = await Address.findOneAndUpdate({ _id: addressId, user: userId }, { isDefault: true }, { new: true });
+  if (!address) throw new ApiError(404, 'Address not found');
+  return address;
+}
+
+module.exports = { create, getAll, getById, update, remove, setDefaultAddress };

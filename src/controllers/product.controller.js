@@ -32,4 +32,14 @@ const toggleAvailability = catchAsync(async (req, res) => {
   sendSuccess(res, { product }, 'Availability toggled');
 });
 
-module.exports = { create, list, getById, update, remove, toggleAvailability };
+const toggleFeatured = catchAsync(async (req, res) => {
+  const product = await productService.toggleFeatured(req.params.productId);
+  sendSuccess(res, { product }, 'Featured toggled');
+});
+
+const uploadImage = catchAsync(async (req, res) => {
+  const result = await productService.uploadImage(req.file);
+  sendSuccess(res, result, 'Image uploaded');
+});
+
+module.exports = { create, list, getById, update, remove, toggleAvailability, toggleFeatured, uploadImage };

@@ -27,4 +27,9 @@ const remove = catchAsync(async (req, res) => {
   sendSuccess(res, null, 'Review deleted');
 });
 
-module.exports = { create, list, getById, update, remove };
+const listByProduct = catchAsync(async (req, res) => {
+  const { reviews, total, page, limit } = await reviewService.listByProduct(req.params.productId, req.query);
+  sendPaginated(res, { reviews }, total, page, limit);
+});
+
+module.exports = { create, list, getById, update, remove, listByProduct };

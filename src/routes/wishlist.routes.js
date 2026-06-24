@@ -8,7 +8,8 @@ const { authenticate } = require('../middlewares/auth');
 router.use(authenticate);
 
 router.get('/', wishlistController.get);
-router.post('/:productId', validate(wishlistValidation.addProduct), wishlistController.addProduct);
+router.post('/', validate(wishlistValidation.addProduct), wishlistController.addProduct);
+router.post('/:productId', wishlistController.addProduct);
 router.delete('/:productId', validate(wishlistValidation.removeProduct), wishlistController.removeProduct);
 
 module.exports = router;

@@ -10,5 +10,9 @@ router.use(authorize(ROLES.ADMIN));
 router.get('/summary', dashboardController.getSummary);
 router.get('/revenue-per-day', dashboardController.getRevenuePerDay);
 router.get('/top-products', dashboardController.getTopSellingProducts);
+router.get('/stats', dashboardController.getStats);
+router.get('/revenue', dashboardController.getRevenue);
+router.get('/orders', dashboardController.getOrdersAnalytics);
+router.get('/top-customers', dashboardController.getTopCustomers);
 
 module.exports = router;

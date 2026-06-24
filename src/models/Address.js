@@ -3,7 +3,11 @@ const mongoose = require('mongoose');
 const addressSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    label: { type: String, trim: true },
+    recipientName: { type: String, trim: true },
     title: { type: String, required: true, trim: true },
+    city: { type: String, required: true, trim: true },
+    area: { type: String, trim: true },
     phone: { type: String, required: true, trim: true },
     street: { type: String, required: true, trim: true },
     building: { type: String, trim: true },

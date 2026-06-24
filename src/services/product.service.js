@@ -1,6 +1,7 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 const ApiError = require('../utils/apiError');
+const { uploadToCloudinary } = require('../middlewares/upload');
 
 async function create(data) {
   const category = await Category.findById(data.category);
@@ -87,4 +88,18 @@ async function toggleAvailability(id) {
   return product;
 }
 
-module.exports = { create, list, getById, update, remove, toggleAvailability };
+async function toggleFeatured(productId) {
+  const product = await Product.findById(productId);
+  if (!product) throw new ApiError(404, 'Product not found');
+  product.featured = !product.featured;
+  await product.save();
+  return product;
+}
+
+async function uploadImage(file) {
+  if (!file) throw new ApiError(400, 'No image file provided');
+  const image = await uploadToCloudinary(file.buffer, 'food/products');
+  return { image, gallery: [image] };
+}
+
+module.exports = { create, list, getById, update, remove, toggleAvailability, toggleFeatured, uploadImage };

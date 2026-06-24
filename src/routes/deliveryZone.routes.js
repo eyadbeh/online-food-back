@@ -14,5 +14,6 @@ router.use(authenticate, authorize(ROLES.ADMIN));
 router.post('/', audit(AUDIT_ACTIONS.ZONE_CREATED, 'Zone', (req, body) => body?.data?.zone?._id), validate(deliveryZoneValidation.create), deliveryZoneController.create);
 router.put('/:zoneId', audit(AUDIT_ACTIONS.ZONE_UPDATED, 'Zone', (req) => req.params.zoneId), validate(deliveryZoneValidation.update), deliveryZoneController.update);
 router.delete('/:zoneId', audit(AUDIT_ACTIONS.ZONE_DELETED, 'Zone', (req) => req.params.zoneId), validate(deliveryZoneValidation.remove), deliveryZoneController.remove);
+router.patch('/:zoneId/default', validate(deliveryZoneValidation.setDefault), deliveryZoneController.setDefault);
 
 module.exports = router;

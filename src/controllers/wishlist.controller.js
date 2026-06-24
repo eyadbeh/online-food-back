@@ -8,7 +8,8 @@ const get = catchAsync(async (req, res) => {
 });
 
 const addProduct = catchAsync(async (req, res) => {
-  const wishlist = await wishlistService.addProduct(req.user._id, req.params.productId);
+  const productId = req.params.productId || req.body.productId;
+  const wishlist = await wishlistService.addProduct(req.user._id, productId);
   sendSuccess(res, { wishlist }, 'Product added to wishlist');
 });
 

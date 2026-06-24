@@ -27,4 +27,9 @@ const remove = catchAsync(async (req, res) => {
   sendSuccess(res, null, 'Address deleted');
 });
 
-module.exports = { create, getAll, getById, update, remove };
+const setDefault = catchAsync(async (req, res) => {
+  const address = await addressService.setDefaultAddress(req.user._id, req.params.addressId);
+  sendSuccess(res, { address }, 'Default address updated');
+});
+
+module.exports = { create, getAll, getById, update, remove, setDefault };

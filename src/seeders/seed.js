@@ -125,11 +125,14 @@ async function seed() {
     console.log(`${products.length} products created`);
 
     console.log('\nSeeding completed successfully!');
-    process.exit(0);
   } catch (err) {
     console.error('Seeding failed:', err);
-    process.exit(1);
+    throw err;
   }
 }
 
-seed();
+if (require.main === module) {
+  seed();
+}
+
+module.exports = seed;

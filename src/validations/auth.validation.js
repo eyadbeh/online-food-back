@@ -8,6 +8,10 @@ const register = {
     email: joi.string().required().email().lowercase().trim(),
     phone: joi.string().trim(),
     password: password.required(),
+    confirmPassword: joi.string().valid(joi.ref('password')).required().messages({
+      'any.only': 'Passwords do not match',
+      'any.required': 'Confirm password is required',
+    }),
   }),
 };
 
@@ -48,6 +52,9 @@ const resetPassword = {
   }),
   body: joi.object().keys({
     password: password.required(),
+    confirmPassword: joi.string().valid(joi.ref('password')).required().messages({
+      'any.only': 'Passwords do not match',
+    }),
   }),
 };
 
@@ -70,4 +77,10 @@ const githubLogin = {
   }),
 };
 
-module.exports = { register, login, refreshToken, logout, verifyEmail, forgotPassword, resetPassword, updateRole, googleLogin, githubLogin };
+const resendVerification = {
+  body: joi.object().keys({
+    email: joi.string().required().email().lowercase().trim(),
+  }),
+};
+
+module.exports = { register, login, refreshToken, logout, verifyEmail, forgotPassword, resetPassword, updateRole, googleLogin, githubLogin, resendVerification };

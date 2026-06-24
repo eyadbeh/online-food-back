@@ -27,4 +27,9 @@ const remove = catchAsync(async (req, res) => {
   sendSuccess(res, null, 'Delivery zone deleted');
 });
 
-module.exports = { list, getById, create, update, remove };
+const setDefault = catchAsync(async (req, res) => {
+  const zone = await deliveryZoneService.setDefaultZone(req.params.zoneId);
+  sendSuccess(res, { zone }, 'Default fallback zone updated');
+});
+
+module.exports = { list, getById, create, update, remove, setDefault };

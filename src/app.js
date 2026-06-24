@@ -24,6 +24,13 @@ const auditLogRoutes = require('./routes/auditLog.routes');
 const wishlistRoutes = require('./routes/wishlist.routes');
 const faqRoutes = require('./routes/faq.routes');
 const uploadRoutes = require('./routes/upload.routes');
+const knowledgeBaseRoutes = require('./routes/knowledgeBase.routes');
+const publicKnowledgeBaseRoutes = require('./routes/publicKnowledgeBase.routes');
+const adminRoutes = require('./routes/admin.routes');
+const systemRoutes = require('./routes/system.routes');
+const devRoutes = require('./routes/dev.routes');
+const userRoutes = require('./routes/user.routes');
+const checkoutRoutes = require('./routes/checkout.routes');
 
 const app = express();
 
@@ -59,6 +66,13 @@ app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/admin/knowledge-base', knowledgeBaseRoutes);
+app.use('/api/knowledge-base', publicKnowledgeBaseRoutes);
+app.use('/api/admin/admins', adminRoutes);
+app.use('/api/system', systemRoutes);
+app.use('/api/dev', devRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/checkout', checkoutRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

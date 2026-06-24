@@ -14,6 +14,7 @@ router.post('/', validate(orderValidation.createOrder), orderController.createOr
 router.get('/', validate(orderValidation.list), orderController.getMyOrders);
 router.get('/:orderId', validate(orderValidation.getById), orderController.getOrder);
 router.post('/:orderId/cancel', validate(orderValidation.cancel), orderController.cancelOrder);
+router.get('/:orderId/tracking', validate(orderValidation.getTracking), orderController.getTracking);
 
 router.get('/admin/all', authorize(ROLES.ADMIN), validate(orderValidation.list), orderController.getAllOrders);
 router.patch('/:orderId/status', authorize(ROLES.ADMIN), validate(orderValidation.updateStatus), orderController.updateOrderStatus);

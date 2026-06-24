@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const ApiError = require('../utils/apiError');
 const catchAsync = require('../utils/catchAsync');
+const checkoutService = require('../services/checkout.service');
+const { sendSuccess } = require('../utils/apiResponse');
 
 const serveCheckout = catchAsync(async (req, res) => {
   const { orderId } = req.query;
@@ -30,4 +32,9 @@ const serveCheckout = catchAsync(async (req, res) => {
   res.type('html').send(html);
 });
 
-module.exports = { serveCheckout };
+const validate = catchAsync(async (req, res) => {
+  const result = await checkoutService.validateCheckout(req.user._id, req.body);
+  sendSuccess(res, result);
+});
+
+module.exports = { serveCheckout, validate };

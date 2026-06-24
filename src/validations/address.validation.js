@@ -3,7 +3,11 @@ const { objectId } = require('./custom.validation');
 
 const create = {
   body: joi.object().keys({
+    label: joi.string().required().trim(),
+    recipientName: joi.string().required().trim(),
     title: joi.string().required().trim(),
+    city: joi.string().required().trim(),
+    area: joi.string().required().trim(),
     phone: joi.string().required().trim(),
     street: joi.string().required().trim(),
     building: joi.string().trim(),
@@ -18,7 +22,11 @@ const create = {
 const update = {
   params: joi.object().keys({ addressId: objectId.required() }),
   body: joi.object().keys({
+    label: joi.string().trim(),
+    recipientName: joi.string().trim(),
     title: joi.string().trim(),
+    city: joi.string().trim(),
+    area: joi.string().trim(),
     phone: joi.string().trim(),
     street: joi.string().trim(),
     building: joi.string().trim(),
@@ -38,4 +46,8 @@ const remove = {
   params: joi.object().keys({ addressId: objectId.required() }),
 };
 
-module.exports = { create, update, getById, remove };
+const setDefault = {
+  params: joi.object().keys({ addressId: objectId.required() }),
+};
+
+module.exports = { create, update, getById, remove, setDefault };

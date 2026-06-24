@@ -48,4 +48,15 @@ async function remove(id) {
   return coupon;
 }
 
-module.exports = { list, getById, create, update, remove };
+async function validateCoupon(couponCode) {
+  const coupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
+  if (!coupon) throw new ApiError(404, 'Coupon not found');
+  if (!coupon.active) throw new ApiError(400, 'Coupon is inactive');
+  if (coupon.expiresAt && coupon.expiresAt < new Date()) throw new ApiError(400, 'Coupon has expired');
+  if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
+    throw new ApiError(400, 'Coupon usage limit reached');
+  }
+  return coupon;
+}
+
+module.exports = { list, getById, create, update, remove, validateCoupon };

@@ -97,4 +97,11 @@ async function ensureHighestFee(fallbackZoneId) {
   }
 }
 
-module.exports = { list, getById, create, update, remove };
+async function setDefaultZone(zoneId) {
+  await DeliveryZone.updateMany({ isDefaultFallback: true }, { isDefaultFallback: false });
+  const zone = await DeliveryZone.findByIdAndUpdate(zoneId, { isDefaultFallback: true }, { new: true });
+  if (!zone) throw new ApiError(404, 'Delivery zone not found');
+  return zone;
+}
+
+module.exports = { list, getById, create, update, remove, setDefaultZone };

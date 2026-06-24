@@ -13,5 +13,6 @@ router.get('/:addressId', validate(addressValidation.getById), addressController
 router.put('/:addressId', validate(addressValidation.update), addressController.update);
 router.patch('/:addressId', validate(addressValidation.update), addressController.update);
 router.delete('/:addressId', validate(addressValidation.remove), addressController.remove);
+router.patch('/:addressId/default', validate(addressValidation.setDefault), addressController.setDefault);
 
 module.exports = router;

@@ -14,10 +14,13 @@ router.post('/github', authLimiter, validate(authValidation.githubLogin), authCo
 router.post('/refresh-token', validate(authValidation.refreshToken), authController.refreshTokens);
 router.post('/logout', authenticate, validate(authValidation.logout), authController.logout);
 router.get('/verify-email/:token', validate(authValidation.verifyEmail), authController.verifyEmail);
+router.post('/resend-verification', authLimiter, validate(authValidation.resendVerification), authController.resendVerification);
 router.post('/forgot-password', authLimiter, validate(authValidation.forgotPassword), authController.forgotPassword);
 router.post('/reset-password/:token', authLimiter, validate(authValidation.resetPassword), authController.resetPassword);
 router.get('/me', authenticate, authController.getMe);
 
+router.get('/users', authenticate, authorize(ROLES.ADMIN), authController.getUsers);
+router.patch('/users/:userId/status', authenticate, authorize(ROLES.ADMIN), authController.toggleStatus);
 router.patch('/users/:userId/role', authenticate, authorize(ROLES.ADMIN), validate(authValidation.updateRole), authController.updateRole);
 
 module.exports = router;

@@ -6,6 +6,7 @@ const reviewValidation = require('../validations/review.validation');
 const { authenticate } = require('../middlewares/auth');
 const verified = require('../middlewares/verified');
 
+router.get('/product/:productId', validate(reviewValidation.listByProduct), reviewController.listByProduct);
 router.get('/', validate(reviewValidation.list), reviewController.list);
 router.get('/:reviewId', validate(reviewValidation.getById), reviewController.getById);
 

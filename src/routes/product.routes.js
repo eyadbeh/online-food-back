@@ -6,6 +6,7 @@ const productValidation = require('../validations/product.validation');
 const { authenticate, authorize } = require('../middlewares/auth');
 const { ROLES, AUDIT_ACTIONS } = require('../constants');
 const { audit } = require('../middlewares/audit');
+const { uploadSingle } = require('../middlewares/upload');
 
 router.get('/', validate(productValidation.list), productController.list);
 router.get('/:productId', validate(productValidation.getById), productController.getById);
@@ -15,5 +16,7 @@ router.post('/', authorize(ROLES.ADMIN), audit(AUDIT_ACTIONS.PRODUCT_CREATED, 'P
 router.put('/:productId', authorize(ROLES.ADMIN), audit(AUDIT_ACTIONS.PRODUCT_UPDATED, 'Product', (req) => req.params.productId), validate(productValidation.update), productController.update);
 router.delete('/:productId', authorize(ROLES.ADMIN), audit(AUDIT_ACTIONS.PRODUCT_DELETED, 'Product', (req) => req.params.productId), validate(productValidation.remove), productController.remove);
 router.patch('/:productId/availability', authorize(ROLES.ADMIN), productController.toggleAvailability);
+router.patch('/:productId/featured', authorize(ROLES.ADMIN), validate(productValidation.toggleFeatured), productController.toggleFeatured);
+router.post('/upload', authorize(ROLES.ADMIN), uploadSingle, productController.uploadImage);
 
 module.exports = router;

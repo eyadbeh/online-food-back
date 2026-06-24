@@ -19,4 +19,26 @@ const getTopSellingProducts = catchAsync(async (req, res) => {
   sendSuccess(res, { topProducts: data });
 });
 
-module.exports = { getSummary, getRevenuePerDay, getTopSellingProducts };
+const getStats = catchAsync(async (req, res) => {
+  const stats = await analyticsService.getStats();
+  sendSuccess(res, stats);
+});
+
+const getRevenue = catchAsync(async (req, res) => {
+  const period = req.query.period || 'daily';
+  const data = await analyticsService.getRevenueByPeriod(period);
+  sendSuccess(res, { revenue: data });
+});
+
+const getOrdersAnalytics = catchAsync(async (req, res) => {
+  const data = await analyticsService.getOrdersAnalytics();
+  sendSuccess(res, { ordersAnalytics: data });
+});
+
+const getTopCustomers = catchAsync(async (req, res) => {
+  const limit = parseInt(req.query.limit, 10) || 10;
+  const data = await analyticsService.getTopCustomers(limit);
+  sendSuccess(res, { topCustomers: data });
+});
+
+module.exports = { getSummary, getRevenuePerDay, getTopSellingProducts, getStats, getRevenue, getOrdersAnalytics, getTopCustomers };
