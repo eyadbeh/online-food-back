@@ -24,6 +24,9 @@ cartSchema.pre('save', function () {
   if (!this.user && !this.guestId) {
     throw new Error('Cart must have either user or guestId');
   }
+  if (this.isModified('items')) {
+    this.subtotal = this.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+  }
 });
 
 module.exports = mongoose.model('Cart', cartSchema);

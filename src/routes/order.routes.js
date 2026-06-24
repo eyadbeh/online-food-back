@@ -4,9 +4,11 @@ const orderController = require('../controllers/order.controller');
 const validate = require('../middlewares/validate');
 const orderValidation = require('../validations/order.validation');
 const { authenticate, authorize } = require('../middlewares/auth');
+const verified = require('../middlewares/verified');
 const { ROLES } = require('../constants');
 
 router.use(authenticate);
+router.use(verified);
 
 router.post('/', validate(orderValidation.createOrder), orderController.createOrder);
 router.get('/', validate(orderValidation.list), orderController.getMyOrders);

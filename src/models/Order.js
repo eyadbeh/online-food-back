@@ -21,8 +21,9 @@ const orderSchema = new mongoose.Schema(
     discountAmount: { type: Number, default: 0, min: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
     coupon: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
-    paymentMethod: { type: String, required: true, enum: ['cod', 'paypal'] },
+    paymentMethod: { type: String, required: true, enum: ['cod', 'paymob'] },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
+    paymentKey: { type: String },
     orderStatus: {
       type: String,
       enum: ['placed', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'],

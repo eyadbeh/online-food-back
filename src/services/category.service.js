@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const Product = require('../models/Product');
 const ApiError = require('../utils/apiError');
 
 async function create(data) {
@@ -22,6 +23,8 @@ async function update(id, data) {
 }
 
 async function remove(id) {
+  const productCount = await Product.countDocuments({ category: id });
+  if (productCount > 0) throw new ApiError(400, `Cannot delete category used by ${productCount} product(s)`);
   const category = await Category.findByIdAndDelete(id);
   if (!category) throw new ApiError(404, 'Category not found');
   return category;

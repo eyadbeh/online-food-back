@@ -5,7 +5,7 @@ const createOrder = {
   body: joi.object().keys({
     addressId: objectId.required(),
     couponCode: joi.string().trim().uppercase(),
-    paymentMethod: joi.string().required().valid('cod', 'paypal'),
+    paymentMethod: joi.string().required().valid('cod', 'paymob'),
     notes: joi.string().trim().max(500),
   }),
 };

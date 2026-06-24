@@ -43,4 +43,21 @@ const getMe = catchAsync(async (req, res) => {
   sendSuccess(res, { user });
 });
 
-module.exports = { register, login, refreshTokens, logout, verifyEmail, forgotPassword, resetPassword, getMe };
+const updateRole = catchAsync(async (req, res) => {
+  const user = await authService.updateUserRole(req.params.userId, req.body.role, req.user._id);
+  sendSuccess(res, { user }, 'User role updated');
+});
+
+const googleLogin = catchAsync(async (req, res) => {
+  const { idToken } = req.body;
+  const result = await authService.googleLogin(idToken);
+  sendSuccess(res, result, 'Google login successful');
+});
+
+const githubLogin = catchAsync(async (req, res) => {
+  const { code } = req.body;
+  const result = await authService.githubLogin(code);
+  sendSuccess(res, result, 'GitHub login successful');
+});
+
+module.exports = { register, login, refreshTokens, logout, verifyEmail, forgotPassword, resetPassword, getMe, updateRole, googleLogin, githubLogin };

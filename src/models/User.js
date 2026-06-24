@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
     provider: { type: String, enum: ['local', 'google', 'github'], default: 'local' },
     emailVerified: { type: Boolean, default: false },
     emailVerificationToken: { type: String },
+    emailVerificationExpires: { type: Date },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
     refreshToken: { type: String },

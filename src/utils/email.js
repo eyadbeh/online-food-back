@@ -1,25 +1,23 @@
 const nodemailer = require('nodemailer');
 
-let transporter = null;
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: true,
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-function getTransporter() {
-  if (!transporter) {
-    if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER) {
-      return null;
-    }
-    transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-    });
-  }
-  return transporter;
-}
-
-async function sendEmail({ to, subject, html }) {
-  const transport = getTransporter();
-  if (!transport) return;
-  await transport.sendMail({ from: process.env.EMAIL_USER, to, subject, html });
+async function sendEmail({ to, subject, text, html }) {
+  await transporter.sendMail({
+    from: process.env.SMTP_EMAIL,
+    to,
+    subject,
+    text,
+    html,
+  });
 }
 
 async function sendVerificationEmail(email, token) {
@@ -28,6 +26,7 @@ async function sendVerificationEmail(email, token) {
     to: email,
     subject: 'Verify your email',
     html: `<p>Click <a href="${url}">here</a> to verify your email.</p>`,
+    text: `Verify your email by visiting: ${url}`,
   });
 }
 
@@ -37,6 +36,7 @@ async function sendResetPasswordEmail(email, token) {
     to: email,
     subject: 'Reset your password',
     html: `<p>Click <a href="${url}">here</a> to reset your password.</p>`,
+    text: `Reset your password by visiting: ${url}`,
   });
 }
 

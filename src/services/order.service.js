@@ -5,7 +5,7 @@ const Coupon = require('../models/Coupon');
 const DeliveryZone = require('../models/DeliveryZone');
 const ApiError = require('../utils/apiError');
 const { getIO } = require('../utils/io');
-const { initiatePayPalPayment, logPayment } = require('./payment.service');
+const { createIntention, logPayment } = require('./payment.service');
 const { logAction } = require('./auditLog.service');
 const { notifyOrderCreated, notifyAdminNewOrder, notifyOrderStatusChanged } = require('./notification.service');
 
@@ -118,17 +118,20 @@ async function createOrder(userId, { addressId, couponCode, paymentMethod, notes
   cart.subtotal = 0;
   await cart.save();
 
-  if (paymentMethod === 'paypal') {
+  if (paymentMethod === 'paymob') {
     try {
-      const paypal = await initiatePayPalPayment(populated);
+      const address = await Address.findById(addressId);
+      const paymob = await createIntention(populated, address);
+      populated.paymentKey = paymob.paymentKey;
+      await populated.save();
       await logPayment({
         order: order._id,
         user: userId,
-        provider: 'paypal',
-        transactionId: paypal.paymentId,
+        provider: 'paymob',
+        transactionId: paymob.clientSecret,
         amount: totalAmount,
         status: 'pending',
-        rawResponse: paypal,
+        rawResponse: paymob,
       });
       notifyOrderCreated(populated);
       notifyAdminNewOrder(populated);
@@ -136,17 +139,17 @@ async function createOrder(userId, { addressId, couponCode, paymentMethod, notes
       const io = getIO();
       io?.emit('new_order', { orderId: order._id, order: populated });
 
-      return { order: populated, approvalUrl: paypal.approvalUrl, paymentId: paypal.paymentId };
+      return { order: populated, clientSecret: paymob.clientSecret, checkoutUrl: paymob.checkoutUrl };
     } catch (err) {
       await logPayment({
         order: order._id,
         user: userId,
-        provider: 'paypal',
+        provider: 'paymob',
         amount: totalAmount,
         status: 'failed',
         rawResponse: err.message,
       });
-      throw new ApiError(500, 'PayPal payment initiation failed');
+      throw new ApiError(500, `Paymob payment initiation failed: ${err.message}`);
     }
   }
 
@@ -222,12 +225,9 @@ async function updateOrderStatus(orderId, newStatus, adminId) {
     throw new ApiError(400, `Cannot transition from ${order.orderStatus} to ${newStatus}`);
   }
 
+  const oldStatus = order.orderStatus;
   order.orderStatus = newStatus;
   order.statusHistory.push({ status: newStatus, changedAt: new Date() });
-
-  if (newStatus === 'delivered' && order.paymentMethod === 'cod') {
-    order.paymentStatus = 'paid';
-  }
 
   if (newStatus === 'delivered') {
     order.paymentStatus = 'paid';
@@ -240,7 +240,7 @@ async function updateOrderStatus(orderId, newStatus, adminId) {
     action: 'ORDER_STATUS_UPDATED',
     entityType: 'Order',
     entityId: order._id,
-    metadata: { from: order.orderStatus, to: newStatus },
+    metadata: { from: oldStatus, to: newStatus },
   });
 
   const populated = await Order.findById(order._id)
@@ -267,9 +267,18 @@ async function cancelOrder(orderId, userId) {
     throw new ApiError(400, 'Order cannot be cancelled at this stage');
   }
 
+  const oldStatus = order.orderStatus;
   order.orderStatus = 'cancelled';
   order.statusHistory.push({ status: 'cancelled', changedAt: new Date() });
   await order.save();
+
+  await logAction({
+    user: userId,
+    action: 'ORDER_STATUS_UPDATED',
+    entityType: 'Order',
+    entityId: order._id,
+    metadata: { from: oldStatus, to: 'cancelled' },
+  });
 
   notifyOrderStatusChanged(order, 'cancelled');
 

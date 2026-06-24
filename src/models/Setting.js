@@ -14,6 +14,8 @@ const settingSchema = new mongoose.Schema(
     tiktokUrl: { type: String, trim: true },
     twitterUrl: { type: String, trim: true },
     workingHours: { type: String, trim: true },
+    deliveryFee: { type: Number, default: 0, min: 0 },
+    estimatedTimes: { type: String, trim: true },
     currency: { type: String, default: 'EGP', trim: true },
     defaultLanguage: { type: String, default: 'en', trim: true },
     aiEnabled: { type: Boolean, default: false },

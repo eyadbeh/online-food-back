@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Review = require('../models/Review');
 const Product = require('../models/Product');
 const ApiError = require('../utils/apiError');
@@ -37,7 +38,7 @@ async function getById(id) {
 }
 
 async function update(id, userId, data) {
-  const review = await Review.findOneAndUpdate({ _id: id, user: userId }, data, { new: true, runValidators: true });
+  const review = await Review.findOneAndUpdate({ _id: id, user: userId }, data, { returnDocument: 'after', runValidators: true });
   if (!review) throw new ApiError(404, 'Review not found or unauthorized');
 
   await updateProductRating(review.product);
@@ -54,7 +55,7 @@ async function remove(id, userId) {
 
 async function updateProductRating(productId) {
   const stats = await Review.aggregate([
-    { $match: { product: productId } },
+    { $match: { product: new mongoose.Types.ObjectId(productId) } },
     { $group: { _id: '$product', averageRating: { $avg: '$rating' }, reviewCount: { $sum: 1 } } },
   ]);
 

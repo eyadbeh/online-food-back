@@ -14,7 +14,14 @@ const productSchema = new mongoose.Schema(
     image: { type: String },
     gallery: [{ type: String }],
     price: { type: Number, required: true, min: 0 },
-    discountedPrice: { type: Number, min: 0 },
+    discountedPrice: {
+      type: Number,
+      min: 0,
+      validate: {
+        validator: function (v) { return v == null || v <= this.price; },
+        message: 'Discounted price must be less than or equal to price',
+      },
+    },
     averageRating: { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0, min: 0 },
     featured: { type: Boolean, default: false },

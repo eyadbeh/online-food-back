@@ -11,6 +11,7 @@ router.post('/', validate(addressValidation.create), addressController.create);
 router.get('/', addressController.getAll);
 router.get('/:addressId', validate(addressValidation.getById), addressController.getById);
 router.put('/:addressId', validate(addressValidation.update), addressController.update);
+router.patch('/:addressId', validate(addressValidation.update), addressController.update);
 router.delete('/:addressId', validate(addressValidation.remove), addressController.remove);
 
 module.exports = router;

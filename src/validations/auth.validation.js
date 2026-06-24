@@ -1,5 +1,5 @@
 const joi = require('joi');
-const { password } = require('./custom.validation');
+const { password, objectId } = require('./custom.validation');
 
 const register = {
   body: joi.object().keys({
@@ -51,4 +51,23 @@ const resetPassword = {
   }),
 };
 
-module.exports = { register, login, refreshToken, logout, verifyEmail, forgotPassword, resetPassword };
+const updateRole = {
+  params: joi.object().keys({ userId: objectId.required() }),
+  body: joi.object().keys({
+    role: joi.string().required().valid('admin', 'customer'),
+  }),
+};
+
+const googleLogin = {
+  body: joi.object().keys({
+    idToken: joi.string().required(),
+  }),
+};
+
+const githubLogin = {
+  body: joi.object().keys({
+    code: joi.string().required(),
+  }),
+};
+
+module.exports = { register, login, refreshToken, logout, verifyEmail, forgotPassword, resetPassword, updateRole, googleLogin, githubLogin };

@@ -5,6 +5,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const { errorHandler, notFound } = require('./middlewares/error');
+const { apiLimiter } = require('./middlewares/rateLimiter');
 const authRoutes = require('./routes/auth.routes');
 const categoryRoutes = require('./routes/category.routes');
 const productRoutes = require('./routes/product.routes');
@@ -17,6 +18,12 @@ const notificationRoutes = require('./routes/notification.routes');
 const orderRoutes = require('./routes/order.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const aiRoutes = require('./routes/ai.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
+const settingRoutes = require('./routes/setting.routes');
+const auditLogRoutes = require('./routes/auditLog.routes');
+const wishlistRoutes = require('./routes/wishlist.routes');
+const faqRoutes = require('./routes/faq.routes');
+const uploadRoutes = require('./routes/upload.routes');
 
 const app = express();
 
@@ -27,6 +34,8 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use('/api', apiLimiter);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'API is running' });
@@ -44,6 +53,12 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/settings', settingRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
+app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/faqs', faqRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

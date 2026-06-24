@@ -1,34 +1,50 @@
-const paypal = require('paypal-rest-sdk');
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
-const { logPayment } = require('../services/payment.service');
+const { verifyCallback, logPayment } = require('../services/payment.service');
 const catchAsync = require('../utils/catchAsync');
 const { sendSuccess } = require('../utils/apiResponse');
 const { getIO } = require('../utils/io');
 
-const paypalSuccess = catchAsync(async (req, res) => {
-  const { paymentId, PayerID, orderId } = req.query;
+const paymobCallback = catchAsync(async (req, res) => {
+  const body = req.body;
+  const obj = body.obj || body;
 
-  const order = await Order.findById(orderId);
-  if (!order) return sendSuccess(res, null, 'Order not found');
+  const isValid = verifyCallback(body);
+  if (!isValid) {
+    console.warn('Paymob callback HMAC verification failed', obj.id);
+    return sendSuccess(res, null, 'Callback acknowledged');
+  }
 
-  paypal.payment.execute(paymentId, { payer_id: PayerID }, async (err, payment) => {
-    if (err) {
-      order.paymentStatus = 'failed';
-      await order.save();
-      return sendSuccess(res, null, 'Payment failed');
-    }
+  const orderRef = obj.special_reference || obj.order?.special_reference || obj.order?.merchant_order_id;
+  const transactionId = obj.id;
 
+  if (!orderRef) {
+    return sendSuccess(res, null, 'No order reference');
+  }
+
+  const order = await Order.findById(orderRef);
+  if (!order) {
+    return sendSuccess(res, null, 'Order not found');
+  }
+
+  if (order.paymentStatus === 'paid') {
+    return sendSuccess(res, null, 'Already paid');
+  }
+
+  const success = obj.success === true || obj.success === 'true';
+
+  if (success) {
     order.paymentStatus = 'paid';
     await order.save();
 
     await logPayment({
       order: order._id,
       user: order.user,
-      provider: 'paypal',
-      transactionId: payment.id,
+      provider: 'paymob',
+      transactionId: String(transactionId),
       amount: order.totalAmount,
       status: 'paid',
-      rawResponse: payment,
+      rawResponse: obj,
     });
 
     const io = getIO();
@@ -37,21 +53,34 @@ const paypalSuccess = catchAsync(async (req, res) => {
       orderStatus: order.orderStatus,
       paymentStatus: 'paid',
     });
+  } else {
+    order.paymentStatus = 'failed';
+    await order.save();
 
-    sendSuccess(res, { orderId: order._id, paymentId }, 'Payment successful');
-  });
+    await logPayment({
+      order: order._id,
+      user: order.user,
+      provider: 'paymob',
+      transactionId: String(transactionId),
+      amount: order.totalAmount,
+      status: 'failed',
+      rawResponse: obj,
+    });
+  }
+
+  sendSuccess(res, null, success ? 'Payment processed' : 'Payment failed');
 });
 
-const paypalCancel = catchAsync(async (req, res) => {
+const paymobRedirect = catchAsync(async (req, res) => {
   const { orderId } = req.query;
-  if (orderId) {
+  if (orderId && mongoose.Types.ObjectId.isValid(orderId)) {
     const order = await Order.findById(orderId);
     if (order && order.paymentStatus === 'pending') {
       order.paymentStatus = 'failed';
       await order.save();
     }
   }
-  sendSuccess(res, null, 'Payment cancelled');
+  sendSuccess(res, null, 'Redirect processed');
 });
 
-module.exports = { paypalSuccess, paypalCancel };
+module.exports = { paymobCallback, paymobRedirect };
