@@ -10,6 +10,12 @@ const categoryRoutes = require('./routes/category.routes');
 const productRoutes = require('./routes/product.routes');
 const reviewRoutes = require('./routes/review.routes');
 const cartRoutes = require('./routes/cart.routes');
+const addressRoutes = require('./routes/address.routes');
+const deliveryZoneRoutes = require('./routes/deliveryZone.routes');
+const couponRoutes = require('./routes/coupon.routes');
+const notificationRoutes = require('./routes/notification.routes');
+const orderRoutes = require('./routes/order.routes');
+const paymentRoutes = require('./routes/payment.routes');
 
 const app = express();
 
@@ -30,6 +36,12 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/addresses', addressRoutes);
+app.use('/api/delivery-zones', deliveryZoneRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
